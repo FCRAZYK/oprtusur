@@ -1,0 +1,59 @@
+import time
+def partition(array, begin, end):
+    k = 0
+    pivot = begin
+    for i in range(begin+1, end+1):
+        k+=1
+        if array[i] <= array[begin]:
+            k+=1
+            pivot += 1
+            array[i], array[pivot] = array[pivot], array[i]
+        k+=1
+    array[pivot], array[begin] = array[begin], array[pivot]
+    k+=1
+    return pivot
+
+
+def quick_sort(array, begin=0, end=None):
+    num = 1
+    if end is None:
+
+        end = len(array) - 1
+
+    def _quicksort(array, begin, end):
+
+        if begin >= end:
+            return
+
+        pivot = partition(array, begin, end)
+
+        _quicksort(array, begin, pivot - 1)
+
+        _quicksort(array, pivot + 1, end)
+
+    return _quicksort(array, begin, end)
+
+import random
+
+n = int(input())
+
+array = [random.randint(0, 1000000) for i in range(n)]
+
+print(array)
+
+k = partition(array, 0, 0)
+
+#num = quick_sort(array)
+
+#num1 = _quicksort(array)
+
+start_time = time.perf_counter()
+quick_sort(array)
+stop_time = time.perf_counter()
+
+print(k )
+
+print(array)
+
+print((stop_time-start_time)*1000)
+
