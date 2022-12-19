@@ -1,0 +1,120 @@
+import sqlite3
+import hashlib
+from ttkbootstrap import *
+from tkinter import *
+from tkinter import messagebox
+import os
+
+
+db = sqlite3.connect('database11.db')
+
+cursor = db.cursor()
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS users(
+login VARCHAR,
+password VARCHAR
+)""")
+
+db.commit()
+
+def save(RegLogin, regPass):
+
+    hash_password = str(hashlib.md5(regPass.encode()).hexdigest())
+
+    values = [(RegLogin, hash_password)]
+
+    cursor.executemany("INSERT INTO users(login, password) VALUES(?,?)", values)
+
+
+    db.commit()
+
+
+reg = Tk()
+reg.geometry("400x200")
+reg.title("Регистрация")
+
+def login():
+    login = tk.Tk()
+    login.geometry("400x170")
+    login.title("Авторизация")
+
+    text = Label(login, text="Для входа в систему авторизируйтесь")
+    textLogin = Label(login, text="Your Login:")
+    Login = Entry(login)
+    textPass = Label(login, text="Your Password:")
+    Pass = Entry(login, show="*")
+    btnLogin = tk.Button(login, text="Авторизоваться", command=lambda: [checkLogin()])
+
+    text.pack()
+    textLogin.pack()
+    Login.pack()
+    textPass.pack()
+    Pass.pack()
+    btnLogin.pack()
+
+
+    def checkLogin():
+        cursor.execute("SELECT login FROM users")
+        k = len(cursor.fetchall())
+        cursor.execute("SELECT login, password FROM users")
+        l = 0
+        for i in range(k):
+            ex = cursor.fetchmany()
+            log = ex[0][0]
+            pp = ex[0][1]
+            hash_passwordLogin = str(hashlib.md5(Pass.get().encode()).hexdigest())
+            if log == Login.get() and pp == hash_passwordLogin:
+                l += 1
+        if l == 0:
+            messagebox.showinfo("Error", "Логин или пароль введен не верно")
+        else:
+            login.destroy(), os.system("sort.py")
+
+def register():
+
+    text = Label(text="Для входа в систему зарегистрируйтесь")
+    textLogin = Label(text="Your Login:")
+    RegLogin = Entry()
+    textPass = Label(text="Your Password:")
+    regPass = Entry()
+    textPassCon = Label(text="Confirm your Password:")
+    regPassCon = Entry()
+    btnRegister = Button(text="Зарегистрироваться", command=lambda:[PasswordLogin()])
+    btnLogin = Button(text="Авторизоваться", command=lambda:[login(), reg.destroy()])
+
+    text.pack()
+    textLogin.pack()
+    RegLogin.pack()
+    textPass.pack()
+    regPass.pack()
+    textPassCon.pack()
+    regPassCon.pack()
+    btnRegister.pack()
+    btnLogin.pack()
+
+    def PasswordLogin():
+        cursor.execute("SELECT login FROM users")
+        k = len(cursor.fetchall())
+        db.commit()
+        cursor.execute("SELECT login FROM users")
+        for i in range(k):
+            ex = cursor.fetchmany()
+            log = ex[0][0]
+
+            if log == RegLogin.get():
+                messagebox.showinfo("Error", "Login already used")
+                break
+            if RegLogin.get() == '' or regPass.get() == '':
+                messagebox.showinfo("Error", "Поле логина или пароля пустует")
+                break
+            if regPass.get() != regPassCon.get():
+                messagebox.showinfo("Error", "Пароли не совпадают")
+                break
+            else:
+                save(RegLogin.get(), regPass.get())
+                login(), reg.destroy()
+                db.commit()
+
+register()
+
+reg.mainloop()
